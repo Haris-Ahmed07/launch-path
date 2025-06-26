@@ -12,34 +12,25 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, UploadCloud } from "lucide-react";
 
-// Define the file validation function with proper type
-const validateFile = (files: FileList) => {
-  if (files.length !== 1) return false;
-  const file = files[0];
-  return file.type === "application/pdf" && file.size <= 5 * 1024 * 1024;
-};
+// Define file validation schema
+const fileSchema = z.custom<FileList>()
+  .refine(
+    (files) => files && files.length === 1,
+    "Please upload exactly one file"
+  )
+  .refine(
+    (files) => files[0]?.type === "application/pdf",
+    "Only PDF files are allowed"
+  )
+  .refine(
+    (files) => files[0]?.size <= 5 * 1024 * 1024,
+    "File size must be less than 5MB"
+  );
 
 const formSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(20, "Job description must be at least 20 characters"),
-  resume: z
-    .instanceof(FileList)
-    .refine(
-      (files) => files.length > 0,
-      "Please upload a resume"
-    )
-    .refine(
-      (files) => files.length === 1,
-      "Please upload only one file"
-    )
-    .refine(
-      (files) => files[0]?.type === "application/pdf",
-      "Only PDF files are allowed"
-    )
-    .refine(
-      (files) => files[0]?.size <= 5 * 1024 * 1024,
-      "File size must be less than 5MB"
-    ),
+  resume: fileSchema,
 });
 
 type FormData = z.infer<typeof formSchema>;
