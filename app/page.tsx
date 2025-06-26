@@ -62,15 +62,14 @@ export default function HomePage() {
             AI-Powered Career Assistant for Job Seekers
           </p>
           <p className="text-gray-500 max-w-2xl mx-auto">
-            Upload your resume and job description to get personalized cover letters, 
-            learning roadmaps, study notes, and curated learning resources.
+            Upload your resume and job description to get personalized cover letters, learning roadmaps, and actionable steps to land your next dream job.
           </p>
         </div>
 
         {!result ? (
           <>
             {/* Features Section */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
               {features.map((feature, index) => (
                 <Card key={index} className="text-center hover:shadow-lg transition-shadow">
                   <CardHeader>
@@ -84,7 +83,7 @@ export default function HomePage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+            </div> */}
 
             {/* Upload Form */}
             <UploadForm onSuccess={setResult} />
