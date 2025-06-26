@@ -44,7 +44,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { 
     register, 
@@ -179,149 +179,120 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-6 w-6" />
+    <Card className="w-full max-w-2xl mx-auto text-sm border-2 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all shadow-lg hover:shadow-xl">
+      <CardHeader className="pb-1 px-4 pt-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <Upload className="h-4 w-4" />
           Upload Your Details
         </CardTitle>
-        <CardDescription>
-          Upload your resume and job details to get personalized career assistance
+        <CardDescription className="text-xs text-muted-foreground">
+          Upload your resume and job details
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="jobTitle">Job Title</Label>
+      <CardContent className="px-4 py-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="jobTitle" className="text-xs font-medium">Job Title</Label>
             <Input
               id="jobTitle"
               type="text"
               placeholder="e.g., Senior Software Engineer"
               {...register("jobTitle")}
-              className={errors.jobTitle ? "border-red-500" : ""}
+              className={`w-full ${errors.jobTitle ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} text-sm border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all`}
             />
             {errors.jobTitle && (
-              <p className="text-sm text-red-500">{errors.jobTitle.message}</p>
+              <p className="text-xs text-red-500 mt-0.5">{errors.jobTitle.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="jobDescription">Job Description</Label>
+          <div className="space-y-1">
+            <Label htmlFor="jobDescription" className="text-xs font-medium">Job Description</Label>
             <Textarea
               id="jobDescription"
-              placeholder="Paste the complete job description here..."
-              rows={6}
+              placeholder="Paste job description..."
+              rows={3}
               {...register("jobDescription")}
-              className={errors.jobDescription ? "border-red-500" : ""}
+              className={`${errors.jobDescription ? "border-red-500" : "border-gray-300 dark:border-gray-600"} min-h-[80px] text-sm border rounded-md p-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all`}
             />
             {errors.jobDescription && (
-              <p className="text-sm text-red-500">{errors.jobDescription.message}</p>
+              <p className="text-xs text-red-500 mt-0.5">{errors.jobDescription.message}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="resume">Resume (PDF)</Label>
-            <div className="flex flex-col space-y-2">
-              <div 
-                className="relative"
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <input
-                  id="resume"
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  {...register("resume", {
-                    onChange: () => trigger("resume")
-                  })}
-                  ref={(e) => {
-                    if (e) {
-                      // @ts-ignore - We need to assign to the ref
-                      fileInputRef.current = e;
-                      // Register the ref with react-hook-form
-                      const { ref } = register('resume');
-                      ref(e);
-                    }
-                  }}
-                />
-                <label
-                  htmlFor="resume"
-                  className={`flex flex-col items-center justify-center w-full h-32 px-4 transition-all bg-background border-2 border-dashed rounded-lg appearance-none cursor-pointer ${
-                    isDragging 
-                      ? 'border-primary/70 bg-primary/5 scale-[1.01] shadow-lg' 
-                      : errors.resume 
-                        ? 'border-red-500' 
-                        : 'border-gray-300 dark:border-gray-600 hover:border-primary/50'
-                  }`}
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    {isDragging ? (
-                      <div className="animate-pulse">
-                        <UploadCloud className="w-8 h-8 mb-2 text-primary" />
-                      </div>
-                    ) : (
-                      <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
-                    )}
-                    <p className="mb-2 text-sm text-muted-foreground text-center">
-                      {isDragging ? (
-                        <span className="font-semibold text-primary">Drop your resume here</span>
-                      ) : (
-                        <>
-                          <span className="font-semibold text-primary">Click to upload</span> or drag and drop
-                        </>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PDF (max. 5MB)
-                    </p>
-                  </div>
-
-                </label>
-              </div>
-              <div className="flex items-center justify-between">
-                {resume?.length > 0 ? (
-                  <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-sm font-medium text-green-600">
-                      {resume[0].name} ({(resume[0].size / 1024).toFixed(1)} KB)
-                    </p>
-                  </div>
+          <div className="space-y-1">
+            <Label className="text-xs font-medium">Resume (PDF, max 5MB)</Label>
+            <div 
+              className={`border border-dashed rounded-md p-3 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${isDragging ? 'border-primary/70 bg-primary/5' : 'border-gray-300 dark:border-gray-600'}`}
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleClick}
+            >
+              <input
+                id="resume"
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                {...register("resume", {
+                  onChange: () => trigger("resume")
+                })}
+                ref={(e) => {
+                  if (e) {
+                    fileInputRef.current = e;
+                    const { ref } = register('resume');
+                    ref(e);
+                  }
+                }}
+              />
+              <div className="flex flex-col items-center justify-center py-1">
+                {isDragging ? (
+                  <UploadCloud className="w-5 h-5 mb-1 text-primary" />
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No file selected
-                  </p>
+                  <Upload className="w-4 h-4 mb-1 text-muted-foreground" />
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Max 5MB • PDF only
+                <p className="text-xs text-center text-muted-foreground leading-tight">
+                  {isDragging ? (
+                    <span className="font-medium text-primary">Drop your resume here</span>
+                  ) : (
+                    <>
+                      <span className="font-medium text-primary">Click to upload</span> or drag and drop
+                    </>
+                  )}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  PDF (max. 5MB)
                 </p>
               </div>
-              {errors.resume && (
-                <p className="flex items-center text-sm text-red-500">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {errors.resume.message}
-                </p>
-              )}
             </div>
+            {resume?.length > 0 && (
+              <div className="flex items-center justify-between text-sm mt-1">
+                <div className="flex items-center text-green-600">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {resume[0].name} ({(resume[0].size / 1024).toFixed(1)} KB)
+                </div>
+              </div>
+            )}
+            {errors.resume && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.resume.message}
+              </p>
+            )}
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
           <Button 
             type="submit" 
+            className="w-full mt-1 text-sm h-9 font-medium"
             disabled={!isFormValid || loading}
-            className={`w-full ${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}
-            aria-disabled={!isFormValid || loading}
+            size="sm"
           >
             {loading ? (
               <>
@@ -329,7 +300,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
                 {isUploading ? 'Uploading...' : 'Processing...'}
               </>
             ) : (
-              "Generate Career Assistance"
+              'Generate Career Assistance'
             )}
           </Button>
         </form>

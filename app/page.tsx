@@ -3,22 +3,23 @@
 import { useState } from "react";
 import UploadForm from "./components/UploadForm";
 import ResultsDisplay from "./components/ResultsDisplay";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Target, BookOpen, Youtube } from "lucide-react";
 import { Header } from "./components/header";
 import { useTheme } from "next-themes";
 
-// Add this type definition if not already present
 type ResultData = {
   cover_letter: string;
   learning_roadmap: string;
   study_notes: string;
-  youtube_links: string[];
-};
+  youtube_links: Array<{
+    title: string;
+    url: string;
+  }>;
+  jobTitle?: string;
+} | null;
 
 export default function HomePage() {
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ResultData>(null);
 
   const handleBack = () => {
     setResult(null);
@@ -41,9 +42,9 @@ export default function HomePage() {
       description: "Get structured learning paths with milestones and timelines for skill development"
     },
     {
-      icon: Youtube,
-      title: "Curated Resources",
-      description: "Access handpicked YouTube videos and learning materials for your career growth"
+      icon: BookOpen,
+      title: "Interview Preparation",
+      description: "Get tailored interview questions and answers based on your resume and job description"
     }
   ];
 
@@ -53,77 +54,60 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="text-center mb-12">
-          <h1 className={`text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 ${isDark ? 'dark:from-blue-400 dark:to-purple-400' : ''}`}>
-            Launch Path
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            AI-Powered Career Assistant for Job Seekers
-          </p>
-          <p className="text-gray-500 max-w-2xl mx-auto">
-            Upload your resume and job description to get personalized cover letters, learning roadmaps, and actionable steps to land your next dream job.
-          </p>
-        </div>
-
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
         {!result ? (
-          <>
-            {/* Features Section */}
-            {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {features.map((feature, index) => (
-                <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="mx-auto mb-4 p-3 bg-blue-50 rounded-full w-fit">
-                      <feature.icon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{feature.description}</CardDescription>
-                  </CardContent>
-                </Card>
-              ))}
-            </div> */}
-
-            {/* Upload Form */}
-            <UploadForm onSuccess={setResult} />
-
-            {/* How it Works */}
-            <div className="mt-16">
-              <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600 font-bold">1</span>
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* Left side - Content */}
+            <div className="lg:w-1/2">
+              <div className="mb-8">
+                <h1 className={`text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 ${isDark ? 'dark:from-blue-400 dark:to-purple-400' : ''}`}>
+                  Launch Path
+                </h1>
+                <p className="text-xl text-gray-600 mb-6">
+                  AI-Powered Career Assistant for Job Seekers
+                </p>
+                <p className="text-base text-gray-600 max-w-2xl mb-8">
+                  Upload your resume and job description to get personalized cover letters, learning roadmaps, and actionable steps to land your next dream job.
+                </p>
+                
+                {/* How it Works */}
+                <div className="mt-8">
+                  <h2 className="text-2xl font-bold mb-6">How It Works</h2>
+                  <div className="space-y-5">
+                    {features.map((feature, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                          <feature.icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-base">{feature.title}</h3>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">{feature.description}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="font-semibold mb-2">Upload Your Resume</h3>
-                  <p className="text-gray-600">Upload your resume in PDF format along with the job details</p>
-                </div>
-                <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600 font-bold">2</span>
-                  </div>
-                  <h3 className="font-semibold mb-2">AI Analysis</h3>
-                  <p className="text-gray-600">Our AI analyzes your background against job requirements</p>
-                </div>
-                <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600 font-bold">3</span>
-                  </div>
-                  <h3 className="font-semibold mb-2">Get Results</h3>
-                  <p className="text-gray-600">Receive personalized career assistance and learning resources</p>
                 </div>
               </div>
             </div>
-          </>
+            
+            {/* Right side - Upload Form */}
+            <div className="lg:w-1/2 w-full sticky top-4 pt-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 text-start">Get Started</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 border-2 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all hover:shadow-xl">
+                <UploadForm onSuccess={setResult} />
+              </div>
+            </div>
+          </div>
         ) : (
-          <ResultsDisplay data={result} onBack={handleBack} />
+          <div className="max-w-4xl mx-auto">
+            <ResultsDisplay data={result} onBack={handleBack} />
+          </div>
         )}
 
         {/* Footer */}
-        <footer className="mt-16 pt-8 border-t text-center text-gray-500">
-          <p>
-            Made with ❤️ by Haris Ahmed using Next.js, ShadCN UI
+        <footer className="mt-12 pt-6 border-t text-center text-sm text-gray-500">
+          <p className="text-base">
+            Made with ❤️ by Haris Ahmed
           </p>
         </footer>
       </div>
