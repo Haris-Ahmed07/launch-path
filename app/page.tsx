@@ -6,7 +6,7 @@ import ResultsDisplay from "./components/ResultsDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Target, BookOpen, Youtube } from "lucide-react";
-import { Header } from "../components/header";
+import { Header } from "./components/header";
 import { useTheme } from "next-themes";
 
 // Add this type definition if not already present
@@ -56,7 +56,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="text-center mb-12">
           <h1 className={`text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 ${isDark ? 'dark:from-blue-400 dark:to-purple-400' : ''}`}>
-            NextHire
+            Launch Path
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             AI-Powered Career Assistant for Job Seekers
