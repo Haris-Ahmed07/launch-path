@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { saveApiKey, getApiKey, clearApiKey } from '../../lib/apiKeyManager';
 import { X, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-// Simple alert component since shadcn/ui alert has dependencies
+import { saveApiKey, getApiKey, clearApiKey } from '../../lib/apiKeyManager';
+
+// Simple alert component
 const Alert = ({ 
   variant = 'default', 
   className = '', 
@@ -59,8 +60,8 @@ export default function ApiKeyModal({
   const [showTestResult, setShowTestResult] = useState(false);
   const router = useRouter();
 
+  // Load saved API key if it exists
   useEffect(() => {
-    // Load saved API key if it exists
     const savedApiKey = getApiKey();
     if (savedApiKey) {
       setApiKey(savedApiKey);
