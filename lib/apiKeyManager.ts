@@ -2,8 +2,8 @@ import axios from 'axios';
 
 const API_KEY_STORAGE_KEY = 'geminiApiKey';
 
-// Get environment API key if available (only works with NEXT_PUBLIC_ prefix in browser)
-const ENV_API_KEY: string | undefined = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_GOOGLE_API_KEY : undefined;
+// Get environment API key if available
+const ENV_API_KEY: string | undefined = typeof process !== 'undefined' ? process.env.GOOGLE_API_KEY : undefined;
 
 // Function to validate if an API key is properly formatted
 const isValidApiKeyFormat = (key: string | null | undefined): boolean => {

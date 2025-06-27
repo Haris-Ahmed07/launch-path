@@ -175,7 +175,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
     const resumeFile = data.resume[0];
     
     // If using environment key, send as multipart form data
-    if (process.env.NEXT_PUBLIC_GOOGLE_API_KEY === apiKey) {
+    if (process.env.GOOGLE_API_KEY === apiKey) {
       formData.append('resume', resumeFile);
       formData.append('jobTitle', data.jobTitle);
       formData.append('jobDescription', data.jobDescription);
@@ -209,7 +209,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
 
   const findValidApiKey = async (): Promise<string | null> => {
     // 1. First try environment API key if it exists
-    const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+    const envApiKey = process.env.GOOGLE_API_KEY;
     if (envApiKey && await testApiKey(envApiKey)) {
       return envApiKey;
     }
