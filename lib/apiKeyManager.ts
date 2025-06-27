@@ -46,7 +46,7 @@ export const saveApiKey = (key: string): void => {
 export const getApiKey = (): string | null => {
   // Server-side: return environment key if available and valid
   if (typeof window === 'undefined') {
-    return isValidApiKeyFormat(ENV_API_KEY) ? ENV_API_KEY : null;
+    return ENV_API_KEY && isValidApiKeyFormat(ENV_API_KEY) ? ENV_API_KEY : null;
   }
   
   try {
