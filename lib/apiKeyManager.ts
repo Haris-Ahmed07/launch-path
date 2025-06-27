@@ -3,7 +3,17 @@ import axios from 'axios';
 const API_KEY_STORAGE_KEY = 'geminiApiKey';
 
 // Get environment API key if available
-const ENV_API_KEY: string | undefined = typeof process !== 'undefined' ? process.env.GOOGLE_API_KEY : undefined;
+const ENV_API_KEY: string | undefined = typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY : undefined;
+
+// Debug logging
+if (typeof window === 'undefined') {
+  console.log('Server-side ENV_API_KEY exists:', !!ENV_API_KEY);
+  if (ENV_API_KEY) {
+    console.log('ENV_API_KEY starts with:', ENV_API_KEY.substring(0, 4) + '...');
+  }
+} else {
+  console.log('Client-side: ENV_API_KEY is not accessible here (as expected)');
+}
 
 // Function to validate if an API key is properly formatted
 const isValidApiKeyFormat = (key: string | null | undefined): boolean => {
@@ -95,6 +105,8 @@ export const clearApiKey = (): void => {
 // Initialize with saved key when this module is loaded
 if (typeof window !== 'undefined') {
   try {
+    console.log('Client-side: Initializing API key manager');
+    console.log('Environment API key available:', !!ENV_API_KEY);
     // Prefer localStorage key, fallback to env key
     const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY) || ENV_API_KEY;
     if (savedKey) {

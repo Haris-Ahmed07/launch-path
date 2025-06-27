@@ -215,19 +215,41 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   };
 
   const findValidApiKey = async (): Promise<string | null> => {
+    console.log('findValidApiKey: Starting key validation...');
+    
     // 1. First try environment API key if it exists
-    const envApiKey = process.env.GOOGLE_API_KEY;
-    if (envApiKey && await testApiKey(envApiKey)) {
-      return envApiKey;
+    const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
+    console.log('findValidApiKey: Environment API key exists:', !!envApiKey);
+    
+    if (envApiKey) {
+      console.log('findValidApiKey: Testing environment API key...');
+      const isEnvKeyValid = await testApiKey(envApiKey);
+      console.log('findValidApiKey: Environment API key is valid:', isEnvKeyValid);
+      if (isEnvKeyValid) {
+        console.log('findValidApiKey: Using environment API key');
+        return envApiKey;
+      }
+    } else {
+      console.log('findValidApiKey: No environment API key found');
     }
     
     // 2. If env key is not valid, try localStorage key
+    console.log('findValidApiKey: Trying to get API key from storage...');
     const savedApiKey = getApiKey();
-    if (savedApiKey && await testApiKey(savedApiKey)) {
-      return savedApiKey;
+    console.log('findValidApiKey: Saved API key exists in storage:', !!savedApiKey);
+    
+    if (savedApiKey) {
+      console.log('findValidApiKey: Testing saved API key...');
+      const isSavedKeyValid = await testApiKey(savedApiKey);
+      console.log('findValidApiKey: Saved API key is valid:', isSavedKeyValid);
+      if (isSavedKeyValid) {
+        console.log('findValidApiKey: Using saved API key');
+        return savedApiKey;
+      }
     }
     
     // 3. If we got here, no valid keys were found
+    console.log('findValidApiKey: No valid API keys found');
     return null;
   };
 
