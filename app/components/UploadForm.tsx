@@ -4,7 +4,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import ApiKeyModal from "./ApiKeyModal";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getApiKey, clearApiKey, saveApiKey } from "../../lib/apiKeyManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,7 +48,17 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const router = useRouter();
+
+  // Check for API key on component mount
+  useEffect(() => {
+    const savedApiKey = getApiKey();
+    if (savedApiKey && typeof axios !== 'undefined') {
+      axios.defaults.headers.common['x-api-key'] = savedApiKey;
+    }
+  }, [router]);
 
   const { 
     register, 
@@ -134,44 +148,117 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
     }
   }, []);
 
-  const onSubmit = async (formData: FormData) => {
+  const testApiKey = async (key: string): Promise<boolean> => {
+    if (!key) return false;
+    
     try {
-      // Prevent default form submission
-      const event = window.event as Event | undefined;
-      if (event) {
-        event.preventDefault();
-      }
+      console.log('Testing API key...');
+      const genAI = new GoogleGenerativeAI(key);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
-      setLoading(true);
-      setIsUploading(true);
-      setError(null);
-      
-      // Validate file again before upload
-      if (!formData.resume || formData.resume.length === 0) {
-        throw new Error('No resume file selected');
-      }
-      
-      const data = new FormData();
-      data.append("resume", formData.resume[0]);
-      data.append("jobTitle", formData.jobTitle);
-      data.append("jobDescription", formData.jobDescription);
-
-      const response = await axios.post("/api/analyze", data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 60000, // 60 seconds timeout
+      // Try a simple content generation to test the key
+      const result = await model.generateContent("Test");
+      console.log('API key test successful');
+      return true;
+    } catch (error: any) {
+      console.error('API Key test failed:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
       });
+      return false;
+    }
+  };
 
+  const handleSubmitWithApiKey = async (data: FormData, apiKey: string) => {
+    const formData = new FormData();
+    const resumeFile = data.resume[0];
+    
+    // If using environment key, send as multipart form data
+    if (process.env.NEXT_PUBLIC_GOOGLE_API_KEY === apiKey) {
+      formData.append('resume', resumeFile);
+      formData.append('jobTitle', data.jobTitle);
+      formData.append('jobDescription', data.jobDescription);
+      
+      return axios.post('/api/analyze', formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'x-api-key': apiKey
+        }
+      });
+    }
+    
+    // If using user's key, read the file and send as base64 in JSON
+    const fileBuffer = await resumeFile.arrayBuffer();
+    const base64File = Buffer.from(fileBuffer).toString('base64');
+    const fileData = {
+      name: resumeFile.name,
+      type: resumeFile.type,
+      data: `data:${resumeFile.type};base64,${base64File}`
+    };
+    
+    return axios.post('/api/analyze', {
+      resume: fileData,
+      jobTitle: data.jobTitle,
+      jobDescription: data.jobDescription,
+      apiKey
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  };
+
+  const findValidApiKey = async (): Promise<string | null> => {
+    // 1. First try environment API key if it exists
+    const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+    if (envApiKey && await testApiKey(envApiKey)) {
+      return envApiKey;
+    }
+    
+    // 2. If env key is not valid, try localStorage key
+    const savedApiKey = getApiKey();
+    if (savedApiKey && await testApiKey(savedApiKey)) {
+      return savedApiKey;
+    }
+    
+    // 3. If we got here, no valid keys were found
+    return null;
+  };
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    setIsUploading(true);
+    setError(null);
+    
+    try {
+      // Try to find a valid API key
+      const apiKey = await findValidApiKey();
+      
+      // If no valid API key, show the modal and stop
+      if (!apiKey) {
+        setShowApiKeyModal(true);
+        return;
+      }
+      
+      // If we get here, we have a valid API key
+      const response = await handleSubmitWithApiKey(data, apiKey);
+      
       onSuccess(response.data);
       reset();
     } catch (err: any) {
-      console.error('Upload error:', err);
-      setError(
-        err.response?.data?.error || 
-        err.message || 
-        "An error occurred while processing your request"
-      );
+      console.error('Error uploading resume:', err);
+      
+      // Check for API key related errors
+      const errorMessage = err.response?.data?.error?.message || err.message || 'An unknown error occurred';
+      const isApiKeyError = err.response?.status === 403 || 
+                         errorMessage.toLowerCase().includes('api key') ||
+                         errorMessage.toLowerCase().includes('quota') ||
+                         errorMessage.toLowerCase().includes('permission');
+      
+      if (isApiKeyError) {
+        setShowApiKeyModal(true);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
       setIsUploading(false);
@@ -304,6 +391,16 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
             )}
           </Button>
         </form>
+        
+        <ApiKeyModal 
+          isOpen={showApiKeyModal} 
+          onClose={() => {
+            setShowApiKeyModal(false);
+            // Refresh the page to ensure API key is properly loaded
+            router.refresh();
+          }}
+          isInvalidKey={error?.toLowerCase().includes('invalid') || error?.toLowerCase().includes('api key')}
+        />
       </CardContent>
     </Card>
   );

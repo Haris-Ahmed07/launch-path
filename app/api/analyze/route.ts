@@ -2,20 +2,111 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pdfParse from "pdf-parse";
 
+// Function to test if an API key is valid
+async function isApiKeyValid(apiKey: string): Promise<boolean> {
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Try a simple request to validate the API key
+    await model.generateContent("Test");
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Check if API key is configured
-    if (!process.env.GOOGLE_API_KEY) {
+    // Get API key from headers or use environment variable
+    let apiKey = req.headers.get('x-api-key');
+    const envApiKey = process.env.GOOGLE_API_KEY;
+    
+    // If no API key in headers but we have an environment key, try that first
+    if (!apiKey && envApiKey) {
+      if (await isApiKeyValid(envApiKey)) {
+        apiKey = envApiKey;
+      }
+    }
+    
+    // If still no valid API key, check for one in the request body (for client-side fallback)
+    if (!apiKey) {
+      const body = await req.json();
+      if (body.apiKey) {
+        if (await isApiKeyValid(body.apiKey)) {
+          apiKey = body.apiKey;
+        }
+      }
+    }
+    
+    // If we still don't have a valid API key, return an error
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "Google API key is not configured" },
-        { status: 500 }
+        { 
+          error: "API key is required",
+          requiresApiKey: true
+        },
+        { status: 401 }
       );
     }
 
-    const formData = await req.formData();
-    const resumeFile = formData.get("resume") as File;
-    const jobTitle = formData.get("jobTitle") as string;
-    const jobDescription = formData.get("jobDescription") as string;
+    // Get the content type
+    const contentType = req.headers.get('content-type') || '';
+    let resumeFile: File;
+    let jobTitle: string;
+    let jobDescription: string;
+
+    try {
+      if (contentType.includes('multipart/form-data')) {
+        // Handle multipart form data
+        const formData = await req.formData();
+        const file = formData.get("resume") as unknown as File;
+        
+        if (!file) {
+          throw new Error('No file uploaded');
+        }
+        
+        // Convert to a proper File object
+        const fileBuffer = await file.arrayBuffer();
+        resumeFile = new File([fileBuffer], file.name || 'resume.pdf', { type: file.type || 'application/pdf' });
+        jobTitle = formData.get("jobTitle") as string;
+        jobDescription = formData.get("jobDescription") as string;
+      } else if (contentType.includes('application/json')) {
+        // Handle JSON data
+        const body = await req.json();
+        
+        // If we have a base64 file in the JSON, convert it to a File object
+        if (body.resume && body.resume.data && body.resume.name) {
+          const base64Data = body.resume.data.split(',')[1] || body.resume.data;
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          resumeFile = new File(
+            [byteArray], 
+            body.resume.name || 'resume.pdf', 
+            { type: body.resume.type || 'application/pdf' }
+          );
+        } else {
+          throw new Error('Invalid file data in request');
+        }
+        
+        jobTitle = body.jobTitle;
+        jobDescription = body.jobDescription;
+      } else {
+        return NextResponse.json(
+          { error: 'Unsupported content type. Please use multipart/form-data or application/json' },
+          { status: 400 }
+        );
+      }
+    } catch (error) {
+      console.error('Error parsing request:', error);
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Failed to parse request' },
+        { status: 400 }
+      );
+    }
 
     // Validate required fields
     if (!resumeFile || !jobTitle || !jobDescription) {
@@ -62,8 +153,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Initialize Gemini AI
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    // Initialize Gemini AI with the provided API key
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Create detailed prompt
