@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
     let resumeFile: File;
     let jobTitle: string;
     let jobDescription: string;
+    let additionalInformation: string | undefined = undefined;
 
     try {
       if (contentType.includes('multipart/form-data')) {
@@ -68,8 +69,9 @@ export async function POST(req: NextRequest) {
         // Convert to a proper File object
         const fileBuffer = await file.arrayBuffer();
         resumeFile = new File([fileBuffer], file.name || 'resume.pdf', { type: file.type || 'application/pdf' });
-        jobTitle = formData.get("jobTitle") as string;
+jobTitle = formData.get("jobTitle") as string;
         jobDescription = formData.get("jobDescription") as string;
+        additionalInformation = formData.get("additionalInformation") as string | undefined;
       } else if (contentType.includes('application/json')) {
         // Handle JSON data
         const body = await req.json();
@@ -92,8 +94,9 @@ export async function POST(req: NextRequest) {
           throw new Error('Invalid file data in request');
         }
         
-        jobTitle = body.jobTitle;
+jobTitle = body.jobTitle;
         jobDescription = body.jobDescription;
+        additionalInformation = body.additionalInformation;
       } else {
         return NextResponse.json(
           { error: 'Unsupported content type. Please use multipart/form-data or application/json' },
@@ -111,7 +114,7 @@ export async function POST(req: NextRequest) {
     // Validate required fields
     if (!resumeFile || !jobTitle || !jobDescription) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "Resume, job title, and job description are required" },
         { status: 400 }
       );
     }
@@ -170,6 +173,12 @@ Job Title: ${jobTitle}
 
 Job Description:
 ${jobDescription.slice(0, 3000)}
+
+${additionalInformation ? `Additional Information:
+${additionalInformation.slice(0, 1000)}` : ''}
+
+${additionalInformation ? `Additional Information:
+${additionalInformation.slice(0, 1000)}` : ''}
 
 Generate a JSON response with the following structure:
 {

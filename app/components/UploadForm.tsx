@@ -34,6 +34,7 @@ const fileSchema = z.custom<FileList>()
 const formSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(20, "Job description must be at least 20 characters"),
+  additionalInformation: z.string().optional(),
   resume: fileSchema,
 });
 
@@ -47,6 +48,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   const [loading, setLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -76,6 +78,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
   // Watch form fields to enable/disable submit button
   const jobTitle = watch('jobTitle');
   const jobDescription = watch('jobDescription');
+  const additionalInformation = watch('additionalInformation');
   const resume = watch('resume');
   
   // Check if all required fields are filled
@@ -179,6 +182,9 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
       formData.append('resume', resumeFile);
       formData.append('jobTitle', data.jobTitle);
       formData.append('jobDescription', data.jobDescription);
+      if (data.additionalInformation) {
+        formData.append('additionalInformation', data.additionalInformation);
+      }
       
       return axios.post('/api/analyze', formData, {
         headers: { 
@@ -201,6 +207,7 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
       resume: fileData,
       jobTitle: data.jobTitle,
       jobDescription: data.jobDescription,
+      additionalInformation: data.additionalInformation,
       apiKey
     }, {
       headers: { 'Content-Type': 'application/json' }
@@ -307,9 +314,38 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs font-medium">Resume (PDF, max 5MB)</Label>
-            <div 
-              className={`border border-dashed rounded-md p-3 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${isDragging ? 'border-primary/70 bg-primary/5' : 'border-gray-300 dark:border-gray-600'}`}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="showAdditionalInfo"
+                checked={showAdditionalInfo}
+                onChange={(e) => setShowAdditionalInfo(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <Label htmlFor="showAdditionalInfo" className="text-xs font-medium cursor-pointer">
+                Add additional information (optional)
+              </Label>
+            </div>
+            {showAdditionalInfo && (
+              <div className="mt-2 space-y-1">
+                <Textarea
+                  id="additionalInformation"
+                  placeholder="Any additional details, preferences, or specific requirements..."
+                  rows={3}
+                  {...register("additionalInformation")}
+                  className="border-gray-300 dark:border-gray-600 min-h-[80px] text-sm border rounded-md p-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Add any other relevant information that might help in the analysis.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="resume" className="text-xs font-medium">Resume</Label>
+            <div
+              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md p-3 cursor-pointer"
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
