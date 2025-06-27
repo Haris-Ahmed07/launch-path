@@ -213,7 +213,7 @@ Generate a JSON response with the following structure:
   "resume_analysis": {
     "missing_skills": ["List of skills from the job description that are missing from the resume"],
     "areas_for_improvement": ["Specific areas where the resume could be improved"],
-    "score": 75,
+    "score": "Calculate a score from 0-100 based on how well the resume matches the job description",
     "feedback": "Detailed feedback on how well the resume matches the job description and specific recommendations for improvement."
   },
   "interview_questions": {
