@@ -3,7 +3,7 @@
 import { useState } from "react";
 import UploadForm from "./components/UploadForm";
 import ResultsDisplay from "./components/ResultsDisplay";
-import { Brain, Target, BookOpen, Youtube } from "lucide-react";
+import { Brain, Target, BookOpen, Youtube, FileText } from "lucide-react";
 import { Header } from "./components/header";
 import { useTheme } from "next-themes";
 
@@ -40,6 +40,11 @@ export default function HomePage() {
       icon: BookOpen,
       title: "Learning Roadmaps",
       description: "Get structured learning paths with milestones and timelines for skill development"
+    },
+    {
+      icon: FileText,
+      title: "Resume Analysis",
+      description: "Get a detailed resume score, identify missing skills, and receive improvement suggestions"
     },
     {
       icon: BookOpen,
@@ -81,7 +86,7 @@ export default function HomePage() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-base">{feature.title}</h3>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm">{feature.description}</p>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">{feature.description}</p>
                         </div>
                       </div>
                     ))}
@@ -105,11 +110,11 @@ export default function HomePage() {
         )}
 
         {/* Footer */}
-        <footer className="mt-12 pt-6 border-t text-center text-sm text-gray-500">
+        {/* <footer className="mt-12 pt-6 border-t text-center text-sm text-gray-500">
           <p className="text-base">
             Made with ❤️ by Haris Ahmed
           </p>
-        </footer>
+        </footer> */}
       </div>
     </div>
   );

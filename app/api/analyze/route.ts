@@ -88,38 +88,72 @@ Generate a JSON response with the following structure:
   "youtube_links": [
     {
       "title": "Frontend Architecture Tutorials",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("React Component Architecture " + jobTitle + " tutorial")
+      "url": "https://www.youtube.com/results?search_query=React%20Component%20Architecture%20Tutorial"
     },
     {
       "title": "State Management Deep Dive",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("Redux Toolkit " + jobTitle + " state management")
+      "url": "https://www.youtube.com/results?search_query=Redux%20Toolkit%20State%20Management"
     },
     {
       "title": "RESTful API Design",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("REST API design patterns " + jobTitle)
+      "url": "https://www.youtube.com/results?search_query=REST%20API%20Design%20Patterns"
     },
     {
       "title": "Authentication & Security",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("JWT authentication " + jobTitle + " tutorial")
+      "url": "https://www.youtube.com/results?search_query=JWT%20Authentication%20Tutorial"
     },
     {
       "title": "Database Design",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("Database design patterns " + jobTitle)
+      "url": "https://www.youtube.com/results?search_query=Database%20Design%20Patterns"
     },
     {
       "title": "TypeScript Mastery",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("Advanced TypeScript " + jobTitle + " tutorial")
+      "url": "https://www.youtube.com/results?search_query=Advanced%20TypeScript%20Tutorial"
     },
     {
       "title": "GraphQL API Development",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("GraphQL API " + jobTitle + " tutorial")
+      "url": "https://www.youtube.com/results?search_query=GraphQL%20API%20Tutorial"
     },
     {
       "title": "DevOps & CI/CD",
-      "url": "https://www.youtube.com/results?search_query=" + encodeURIComponent("Docker Kubernetes CI/CD " + jobTitle)
+      "url": "https://www.youtube.com/results?search_query=Docker%20Kubernetes%20CI%20CD"
     }
-  ]
+  ],
+  "resume_analysis": {
+    "missing_skills": ["List of skills from the job description that are missing from the resume"],
+    "areas_for_improvement": ["Specific areas where the resume could be improved"],
+    "score": 75,
+    "feedback": "Detailed feedback on how well the resume matches the job description and specific recommendations for improvement."
+  },
+  "interview_questions": {
+    "technical_questions": [
+      "What are the key differences between REST and GraphQL, and when would you choose one over the other?",
+      "Explain the Virtual DOM in React and how it improves performance.",
+      "How would you optimize a slow-loading web application?"
+    ],
+    "behavioral_questions": [
+      "Tell me about a time you had to learn a new technology quickly.",
+      "Describe a challenging bug you faced and how you solved it.",
+      "How do you handle disagreements with team members about technical decisions?"
+    ],
+    "system_design_questions": [
+      "How would you design a URL shortening service like bit.ly?",
+      "Design a real-time chat application like WhatsApp.",
+      "How would you scale a web application to handle millions of users?"
+    ],
+    "job_specific_questions": [
+      "How would you implement a feature that allows users to drag and drop components in a dashboard?",
+      "What are the key considerations when building a full-stack application?",
+      "How would you handle working with legacy code?"
+    ]
+  }
 }
+
+Resume Analysis Requirements:
+1. Analyze the resume against the job description and identify missing skills that are required for the position
+2. Identify areas where the resume could be improved (e.g., formatting, missing information, weak action verbs)
+3. Provide a score out of 100 based on how well the resume matches the job description
+4. Give specific, actionable feedback for improvement
 
 Cover Letter Requirements:
 1. Do not mention where the job was advertised

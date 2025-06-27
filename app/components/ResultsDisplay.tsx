@@ -11,7 +11,14 @@ import {
   ArrowLeft,
   Copy,
   Check,
-  ExternalLink
+  ExternalLink,
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  LayoutGrid,
+  MessageSquare,
+  Users
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import ReactMarkdown from 'react-markdown';
@@ -29,12 +36,28 @@ interface YouTubeLink {
   url: string;
 }
 
+interface InterviewQuestions {
+  technical_questions: string[];
+  behavioral_questions: string[];
+  system_design_questions: string[];
+  job_specific_questions: string[];
+}
+
+interface ResumeAnalysis {
+  missing_skills: string[];
+  areas_for_improvement: string[];
+  score: number;
+  feedback: string;
+}
+
 interface ResultData {
   cover_letter: string;
   learning_roadmap: string;
   study_notes: string;
   youtube_links: YouTubeLink[];
   jobTitle?: string;
+  resume_analysis?: ResumeAnalysis;
+  interview_questions?: InterviewQuestions;
 }
 
 interface ResultsDisplayProps {
@@ -473,6 +496,61 @@ export default function ResultsDisplay({ data, onBack }: ResultsDisplayProps) {
         </CardContent>
       </Card>
 
+      
+
+      {/* Resume Analysis */}
+      {data.resume_analysis && (
+        <Card data-card-type="resume-analysis" className="border-l-4 border-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Resume Analysis
+              </CardTitle>
+              <CardDescription>
+                How well your resume matches the job description
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">
+                  {data.resume_analysis.score}%
+                </div>
+                <div className="text-sm text-muted-foreground">Match Score</div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <h3 className="font-medium mb-2">Missing Skills</h3>
+              {data.resume_analysis.missing_skills.length > 0 ? (
+                <ul className="list-disc pl-6 space-y-1">
+                  {data.resume_analysis.missing_skills.map((skill, i) => (
+                    <li key={i} className="text-foreground">{skill}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground">No major skills missing. Good job!</p>
+              )}
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-2">Areas for Improvement</h3>
+              <ul className="list-disc pl-6 space-y-1">
+                {data.resume_analysis.areas_for_improvement.map((item, i) => (
+                  <li key={i} className="text-foreground">{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <h3 className="font-medium mb-2">Feedback</h3>
+              <p className="whitespace-pre-line">{data.resume_analysis.feedback}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Study Notes */}
       {/* <Card data-card-type="notes">
         <CardHeader>
@@ -490,6 +568,86 @@ export default function ResultsDisplay({ data, onBack }: ResultsDisplayProps) {
           </div>
         </CardContent>
       </Card> */}
+
+      {/* Interview Questions */}
+      {data.interview_questions && (
+        <Card data-card-type="interview-questions" className="border-l-4 border-purple-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-purple-600" />
+              Interview Preparation
+            </CardTitle>
+            <CardDescription>
+              Practice these questions to prepare for your {data.jobTitle || 'next'} interview
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {/* Technical Questions */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Code2 className="h-5 w-5 text-purple-500" />
+                Technical Questions
+              </h3>
+              <ul className="space-y-3 pl-2">
+                {data.interview_questions.technical_questions.map((question, i) => (
+                  <li key={`tech-${i}`} className="relative pl-4">
+                    <span className="absolute left-0 top-2 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+                    <p className="text-muted-foreground">{question}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Behavioral Questions */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Users className="h-5 w-5 text-blue-500" />
+                Behavioral Questions
+              </h3>
+              <ul className="space-y-3 pl-2">
+                {data.interview_questions.behavioral_questions.map((question, i) => (
+                  <li key={`beh-${i}`} className="relative pl-4">
+                    <span className="absolute left-0 top-2 h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                    <p className="text-muted-foreground">{question}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* System Design Questions */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <LayoutGrid className="h-5 w-5 text-green-500" />
+                System Design Questions
+              </h3>
+              <ul className="space-y-3 pl-2">
+                {data.interview_questions.system_design_questions.map((question, i) => (
+                  <li key={`sys-${i}`} className="relative pl-4">
+                    <span className="absolute left-0 top-2 h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                    <p className="text-muted-foreground">{question}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Job-Specific Questions */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-amber-500" />
+                Job-Specific Questions
+              </h3>
+              <ul className="space-y-3 pl-2">
+                {data.interview_questions.job_specific_questions.map((question, i) => (
+                  <li key={`job-${i}`} className="relative pl-4">
+                    <span className="absolute left-0 top-2 h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    <p className="text-muted-foreground">{question}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* YouTube Resources */}
       {/* <Card data-card-type="youtube">
